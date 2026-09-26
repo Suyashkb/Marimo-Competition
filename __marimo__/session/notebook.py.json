@@ -1,0 +1,269 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.25.0",
+    "script_metadata_hash": "db33575d0ccbd3b420b6b453558ed1b1"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "b1f89d84ce731667f7c5697e4424bb8d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><div style=\"border-left:4px solid #2a78d6;padding:0.2rem 0 0.2rem 1rem\">\n\n# Molecular Lego\n### Nine properties, one model, nine different problems\n\n</div>\n\n<span class=\"paragraph\">A drug has to be many things at once. Soluble enough to dissolve. Greasy enough\nto cross a membrane, but not so greasy it falls apart. Slow enough to survive the\nliver. Free enough in the blood to actually reach anything.</span>\n<span class=\"paragraph\">Miss <strong>one</strong> and the molecule is dead, however good the rest looks.</span>\n<span class=\"paragraph\">So this notebook draws a molecule as a <strong>Lego piece</strong>: one peg per property, and\na <strong>socket</strong> that a given project will accept. The piece clicks, or it doesn't.</span>\n<span class=\"paragraph\">Then it asks the question it was really built for: <em>when the peg comes out the\nwrong length, whose fault is it -- the model's, or the data's?</em></span>\n<span class=\"paragraph\">The answer turns out to be different for every one of the nine properties. That\nis the whole notebook.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "e1705e35571e0617b2698b1bf8113f0a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-accordion data-labels='[&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eNew to any of this? Start here (60 seconds)&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;]' data-multiple='false' data-expanded='[]'><div><span class=\"markdown prose dark:prose-invert contents\"><table>\n<thead>\n<tr>\n<th>Word</th>\n<th>What it means</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><strong>ADMET</strong></td>\n<td>What the body does to a drug: <strong>A</strong>bsorption, <strong>D</strong>istribution, <strong>M</strong>etabolism, <strong>E</strong>xcretion, <strong>T</strong>oxicity. A potent drug that fails any of these is not a drug.</td>\n</tr>\n<tr>\n<td><strong>SMILES</strong></td>\n<td>A molecule written as text. <code>CCO</code> is ethanol. The model reads these.</td>\n</tr>\n<tr>\n<td><strong>LogD</strong></td>\n<td>Greasiness. How the molecule splits between oil and water at blood pH. Roughly 1-3 is the sweet spot.</td>\n</tr>\n<tr>\n<td><strong>Solubility (KSOL)</strong></td>\n<td>How much dissolves in water, in micromolar. Undissolved drug cannot be absorbed.</td>\n</tr>\n<tr>\n<td><strong>Clearance (HLM/MLM)</strong></td>\n<td>How fast liver enzymes destroy it. <strong>H</strong>uman or <strong>M</strong>ouse <strong>L</strong>iver <strong>M</strong>icrosomes. Lower is better.</td>\n</tr>\n<tr>\n<td><strong>Permeability (Papp)</strong></td>\n<td>How fast it crosses a sheet of gut-like cells. Higher is better.</td>\n</tr>\n<tr>\n<td><strong>Efflux</strong></td>\n<td>How hard cells pump it back out. Above ~2 is trouble, especially for the brain.</td>\n</tr>\n<tr>\n<td><strong>Protein binding (MPPB/MBPB/MGMB)</strong></td>\n<td>The % left <em>unbound</em> in blood, brain or muscle. Only unbound drug can act.</td>\n</tr>\n<tr>\n<td><strong>Endpoint</strong></td>\n<td>One measured property. This dataset has nine.</td>\n</tr>\n<tr>\n<td><strong>Temporal split</strong></td>\n<td>Train on molecules the chemists made early, test on the ones they made later. Harder, and honest -- it is what real prediction has to do.</td>\n</tr>\n</tbody>\n</table></span></div></marimo-accordion>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "fd51573ee40fc42ae5c7b3fcf0fdd372",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"where-all-of-this-comes-from\">Where all of this comes from</h2>\n<span class=\"paragraph\"><strong>The data</strong> is real. Expansion Therapeutics ran drug-discovery campaigns against\nRNA-mediated diseases -- myotonic dystrophy, ALS, dementia -- and released\n<strong>7,608 molecules</strong> with up to nine ADMET measurements each, under CC-BY-4.0.\nOver 370 teams competed on it in the OpenADMET-ExpansionRx blind challenge.</span>\n<span class=\"paragraph\"><strong>The models</strong> are ours, trained for this notebook on the challenge's own\n<strong>temporal split</strong>: every molecule in the test set was made <em>after</em> every\nmolecule in the training set.</span>\n<blockquote>\n<span class=\"paragraph\">The challenge winner, Inductive Bio's <em>Beacon</em>, is proprietary -- no code, no\nweights. Nothing here reproduces it. We rebuilt the <em>public</em> recipe that the\npublished write-ups describe: a Chemprop D-MPNN with CheMeleon initialisation,\nfive seeds, next to gradient-boosted trees on fingerprints.</span>\n</blockquote>\n<span class=\"paragraph\">Every number in this notebook came out of those runs, on that split. Where a\nresult contradicted what we expected, it is still here -- four of them do.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "114a9cebb63c091f8c25e4fd4a98df23",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"part-1-nine-sockets-one-molecule\">Part 1 -- Nine sockets, one molecule</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "687d26147bd5aa325915b2db2ac79021",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Pick what kind of drug you are trying to make. Each project accepts a different\nset of property ranges: a brain drug cannot afford to be pumped out at the\nblood-brain barrier, a muscle drug cares about how much stays free in muscle.</span>\n<span class=\"paragraph\">Then pick a molecule, and see whether its nine pegs fit.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "b2f3703a672a9f6b6e6bb96fe5799efc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "acdf9f624843dca5c5eaba690898593c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "aceac7f9eb51690bf877ab918885608a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: row;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 2rem'><marimo-ui-element object-id='PKri-0' random-id='3683260f-89e4-96bc-afe1-48f274305679'><marimo-dropdown data-initial-value='[&quot;Brain drug&quot;]' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eThis project is making a&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-options='[&quot;Oral drug&quot;,&quot;Brain drug&quot;,&quot;Muscle drug&quot;,&quot;Everything at once&quot;]' data-allow-select-none='false' data-searchable='false' data-full-width='false' data-disabled='false'></marimo-dropdown></marimo-ui-element><marimo-ui-element object-id='Xref-0' random-id='2ab55e49-507d-e088-7a19-fa5423c76600'><marimo-dropdown data-initial-value='[&quot;E-0016335 -- clicks into almost everything&quot;]' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eMolecule&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-options='[&quot;E-0016335 -- clicks into almost everything&quot;,&quot;E-0002036 -- fails three brain requirements&quot;,&quot;E-0018987 -- pumped straight back out&quot;,&quot;E-0020084 -- barely dissolves&quot;]' data-allow-select-none='false' data-searchable='false' data-full-width='false' data-disabled='false'></marimo-dropdown></marimo-ui-element></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "9da54df33051c7976d452c7cb055f27a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: row;justify-content: space-between;align-items: center;flex-wrap: nowrap;gap: 1rem'><div style='flex: 1'><?xml version='1.0' encoding='iso-8859-1'?>\n<svg version='1.1' baseProfile='full'\n              xmlns='http://www.w3.org/2000/svg'\n                      xmlns:rdkit='http://www.rdkit.org/xml'\n                      xmlns:xlink='http://www.w3.org/1999/xlink'\n                  xml:space='preserve'\nwidth='300px' height='220px' viewBox='0 0 300 220'>\n<!-- END OF HEADER -->\n<path class='bond-0 atom-0 atom-1' d='M 266.0,142.2 L 276.0,119.8' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-0 atom-0 atom-1' d='M 263.7,138.3 L 271.5,120.8' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-1 atom-1 atom-2' d='M 276.0,119.8 L 257.8,103.4' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-2 atom-2 atom-3' d='M 257.8,103.4 L 257.8,78.9' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-2 atom-2 atom-3' d='M 254.1,101.3 L 254.1,81.0' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-3 atom-3 atom-4' d='M 257.8,78.9 L 248.9,73.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-3 atom-3 atom-4' d='M 248.9,73.7 L 240.0,68.6' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-4 atom-4 atom-5' d='M 233.1,68.6 L 224.2,73.7' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-4 atom-4 atom-5' d='M 224.2,73.7 L 215.3,78.9' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-4 atom-4 atom-5' d='M 234.9,71.8 L 226.9,76.4' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-4 atom-4 atom-5' d='M 226.9,76.4 L 218.9,81.0' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-5 atom-5 atom-6' d='M 215.3,78.9 L 215.3,103.4' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-6 atom-6 atom-7' d='M 215.3,103.4 L 194.0,115.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-7 atom-7 atom-8' d='M 194.0,115.7 L 172.8,103.4' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-8 atom-8 atom-9' d='M 172.8,103.4 L 151.5,115.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-8 atom-8 atom-9' d='M 172.8,107.6 L 155.2,117.8' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-9 atom-9 atom-10' d='M 151.5,115.7 L 151.5,140.2' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-10 atom-10 atom-11' d='M 151.5,140.2 L 142.9,145.2' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-10 atom-10 atom-11' d='M 142.9,145.2 L 134.3,150.2' style='fill:none;fill-rule:evenodd;stroke:#FF0000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-11 atom-11 atom-12' d='M 126.3,150.2 L 117.6,145.2' style='fill:none;fill-rule:evenodd;stroke:#FF0000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-11 atom-11 atom-12' d='M 117.6,145.2 L 109.0,140.2' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-12 atom-12 atom-13' d='M 109.0,140.2 L 87.8,152.5' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-13 atom-13 atom-14' d='M 87.8,152.5 L 78.9,147.3' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-13 atom-13 atom-14' d='M 78.9,147.3 L 69.9,142.2' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-14 atom-14 atom-15' d='M 66.5,135.9 L 66.5,125.8' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-14 atom-14 atom-15' d='M 66.5,125.8 L 66.5,115.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-15 atom-15 atom-16' d='M 66.5,115.7 L 45.3,103.4' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-16 atom-16 atom-17' d='M 45.3,103.4 L 24.0,115.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-17 atom-17 atom-18' d='M 24.0,115.7 L 24.0,140.2' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-18 atom-18 atom-19' d='M 24.0,140.2 L 45.3,152.5' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-19 atom-10 atom-20' d='M 151.5,140.2 L 172.8,152.5' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-19 atom-10 atom-20' d='M 155.2,138.1 L 172.8,148.2' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-20 atom-20 atom-21' d='M 172.8,152.5 L 194.0,140.2' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-21 atom-6 atom-22' d='M 215.3,103.4 L 236.5,115.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-21 atom-6 atom-22' d='M 218.9,101.3 L 236.5,111.4' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-22 atom-22 atom-23' d='M 236.5,115.7 L 238.6,125.5' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-22 atom-22 atom-23' d='M 238.6,125.5 L 240.7,135.4' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-23 atom-23 atom-0' d='M 245.1,140.0 L 255.5,141.1' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-23 atom-23 atom-0' d='M 255.5,141.1 L 266.0,142.2' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-24 atom-22 atom-2' d='M 236.5,115.7 L 257.8,103.4' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-25 atom-21 atom-7' d='M 194.0,140.2 L 194.0,115.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-25 atom-21 atom-7' d='M 190.3,138.1 L 190.3,117.8' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-26 atom-19 atom-14' d='M 45.3,152.5 L 54.2,147.3' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path class='bond-26 atom-19 atom-14' d='M 54.2,147.3 L 63.1,142.2' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />\n<path d='M 266.5,141.1 L 266.0,142.2 L 265.5,142.2' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 275.5,120.9 L 276.0,119.8 L 275.1,119.0' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 257.8,80.1 L 257.8,78.9 L 257.3,78.6' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 215.7,78.6 L 215.3,78.9 L 215.3,80.1' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 173.8,104.0 L 172.8,103.4 L 171.7,104.0' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 152.6,115.0 L 151.5,115.7 L 151.5,116.9' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 109.4,140.4 L 109.0,140.2 L 107.9,140.8' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 88.8,151.9 L 87.8,152.5 L 87.3,152.2' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 66.5,116.2 L 66.5,115.7 L 65.4,115.0' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 46.3,104.0 L 45.3,103.4 L 44.2,104.0' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 25.1,115.0 L 24.0,115.7 L 24.0,116.9' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 24.0,139.0 L 24.0,140.2 L 25.1,140.8' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 44.2,151.9 L 45.3,152.5 L 45.7,152.2' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 171.7,151.9 L 172.8,152.5 L 173.8,151.9' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path d='M 192.9,140.8 L 194.0,140.2 L 194.0,139.0' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />\n<path class='atom-4' d='M 235.0 63.1\nL 237.3 66.8\nQ 237.5 67.2, 237.8 67.8\nQ 238.2 68.5, 238.2 68.5\nL 238.2 63.1\nL 239.1 63.1\nL 239.1 70.1\nL 238.2 70.1\nL 235.8 66.0\nQ 235.5 65.6, 235.2 65.0\nQ 234.9 64.5, 234.8 64.3\nL 234.8 70.1\nL 233.9 70.1\nL 233.9 63.1\nL 235.0 63.1\n' fill='#0000FF'/>\n<path class='atom-11' d='M 127.1 152.5\nQ 127.1 150.8, 127.9 149.9\nQ 128.7 149.0, 130.3 149.0\nQ 131.8 149.0, 132.6 149.9\nQ 133.4 150.8, 133.4 152.5\nQ 133.4 154.2, 132.6 155.1\nQ 131.8 156.1, 130.3 156.1\nQ 128.7 156.1, 127.9 155.1\nQ 127.1 154.2, 127.1 152.5\nM 130.3 155.3\nQ 131.3 155.3, 131.9 154.6\nQ 132.5 153.9, 132.5 152.5\nQ 132.5 151.1, 131.9 150.4\nQ 131.3 149.7, 130.3 149.7\nQ 129.2 149.7, 128.6 150.4\nQ 128.0 151.1, 128.0 152.5\nQ 128.0 153.9, 128.6 154.6\nQ 129.2 155.3, 130.3 155.3\n' fill='#FF0000'/>\n<path class='atom-14' d='M 65.0 136.7\nL 67.2 140.4\nQ 67.5 140.8, 67.8 141.4\nQ 68.2 142.1, 68.2 142.1\nL 68.2 136.7\nL 69.1 136.7\nL 69.1 143.7\nL 68.2 143.7\nL 65.7 139.7\nQ 65.5 139.2, 65.2 138.6\nQ 64.9 138.1, 64.8 137.9\nL 64.8 143.7\nL 63.9 143.7\nL 63.9 136.7\nL 65.0 136.7\n' fill='#0000FF'/>\n<path class='atom-23' d='M 232.2 136.2\nL 233.1 136.2\nL 233.1 139.1\nL 236.7 139.1\nL 236.7 136.2\nL 237.6 136.2\nL 237.6 143.1\nL 236.7 143.1\nL 236.7 139.9\nL 233.1 139.9\nL 233.1 143.1\nL 232.2 143.1\nL 232.2 136.2\n' fill='#0000FF'/>\n<path class='atom-23' d='M 240.1 136.2\nL 242.4 139.9\nQ 242.6 140.2, 242.9 140.9\nQ 243.3 141.5, 243.3 141.6\nL 243.3 136.2\nL 244.3 136.2\nL 244.3 143.1\nL 243.3 143.1\nL 240.9 139.1\nQ 240.6 138.6, 240.3 138.1\nQ 240.0 137.6, 239.9 137.4\nL 239.9 143.1\nL 239.0 143.1\nL 239.0 136.2\nL 240.1 136.2\n' fill='#0000FF'/>\n</svg>\n</div><div style='flex: 3'><svg class=\"lego-board\" viewBox=\"0 0 830 400\" width=\"100%\" role=\"img\" aria-label=\"Predicted properties against required ranges\" xmlns=\"http://www.w3.org/2000/svg\"><style>\n.lego-board { color-scheme: light; --surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--grid:#e1e0d9;--axis:#c3c2b7;--good:#0ca30c;--critical:#d03b3b;--socket:rgba(11,11,11,0.07);--peg_unknown:#898781;\n  background: var(--surface); font: 12px system-ui, -apple-system, \"Segoe UI\", sans-serif; }\n@media (prefers-color-scheme: dark) {\n  :root:where(:not([data-theme=\"light\"])) .lego-board { color-scheme: dark; --surface:#1a1a19;--ink:#ffffff;--ink2:#c3c2b7;--muted:#898781;--grid:#2c2c2a;--axis:#383835;--good:#0ca30c;--critical:#d03b3b;--socket:rgba(255,255,255,0.09);--peg_unknown:#898781; }\n}\n:root[data-theme=\"dark\"] .lego-board { color-scheme: dark; --surface:#1a1a19;--ink:#ffffff;--ink2:#c3c2b7;--muted:#898781;--grid:#2c2c2a;--axis:#383835;--good:#0ca30c;--critical:#d03b3b;--socket:rgba(255,255,255,0.09);--peg_unknown:#898781; }\n.lego-board text { font: 12px system-ui, -apple-system, \"Segoe UI\", sans-serif; }\n.lego-board .lbl { fill: var(--ink2); }\n.lego-board .socket { fill: var(--socket); }\n.lego-board .socket-off { fill: none; stroke: var(--grid); stroke-dasharray: 2 4; }\n.lego-board .socket-edge { stroke: var(--axis); stroke-width: 2; }\n.lego-board .peg-fit { fill: var(--good); stroke: var(--surface); stroke-width: 2; }\n.lego-board .peg-miss { fill: var(--critical); stroke: var(--surface); stroke-width: 2; }\n.lego-board .unc { fill: var(--ink2); opacity: 0.35; }\n.lego-board .ghost { stroke: var(--ink); stroke-width: 2.5; stroke-dasharray: 4 2; }\n.lego-board .nodata, .lego-board .v-unknown { fill: var(--muted); }\n.lego-board .req { fill: var(--muted); font-size: 10px; }\n.lego-board .peg-idle { fill: var(--peg_unknown); stroke: var(--surface); stroke-width: 2; opacity: .55; }\n.lego-board .cap-strong { fill: var(--ink2); font-weight: 600; }\n.lego-board .mk { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }\n.lego-board .mk-fit { stroke: var(--good); }\n.lego-board .mk-miss { stroke: var(--critical); }\n.lego-board .mk-dim { stroke: var(--muted); }\n.lego-board .mk-dot { fill: var(--muted); }\n.lego-board .val { fill: var(--ink); font-variant-numeric: tabular-nums; }\n.lego-board .v-fit { fill: var(--good); }\n.lego-board .v-miss { fill: var(--critical); }\n.lego-board .axis { stroke: var(--axis); stroke-width: 1; }\n.lego-board .cap { fill: var(--muted); }\n</style><text x=\"8\" y=\"14\" class=\"cap-strong\">E-0016335 -- \"Brain drug\"</text><g class=\"row\"><text x=\"128\" y=\"39\" text-anchor=\"end\" class=\"lbl\">LogD</text><text x=\"128\" y=\"51\" text-anchor=\"end\" class=\"req\">1.5-3.5</text><rect x=\"333.1\" y=\"26\" width=\"127.4\" height=\"26\" rx=\"3\" class=\"socket\"/><line x1=\"333.1\" y1=\"26\" x2=\"333.1\" y2=\"52\" class=\"socket-edge\"/><line x1=\"460.5\" y1=\"26\" x2=\"460.5\" y2=\"52\" class=\"socket-edge\"/><path d=\"M142.0,34.0 H354.0 Q358.0,34.0 358.0,38.0 V42.0 Q358.0,46.0 354.0,46.0 H142.0 Z\" class=\"peg-fit\"/><rect x=\"353.2\" y=\"34\" width=\"9.6\" height=\"12\" rx=\"2\" class=\"unc\"/><title>LogD: predicted 1.9, measured 1.9 -- greasiness: too low can't cross membranes, too high won't dissolve</title><line x1=\"358.6\" y1=\"31\" x2=\"358.6\" y2=\"49\" class=\"ghost\"/><text x=\"664\" y=\"44\" text-anchor=\"end\" class=\"val\">1.9</text><g transform=\"translate(676,37)\"><polyline points=\"0,3 2.6,5.8 7,0.4\" class=\"mk mk-fit\"/></g><text x=\"690\" y=\"44\" class=\"v-fit\">fits</text></g><g class=\"row\"><text x=\"128\" y=\"75\" text-anchor=\"end\" class=\"lbl\">KSOL</text><text x=\"128\" y=\"87\" text-anchor=\"end\" class=\"req\">min 50 uM</text><rect x=\"419.7\" y=\"62\" width=\"136.3\" height=\"26\" rx=\"3\" class=\"socket\"/><line x1=\"419.7\" y1=\"62\" x2=\"419.7\" y2=\"88\" class=\"socket-edge\"/><line x1=\"556.0\" y1=\"62\" x2=\"556.0\" y2=\"88\" class=\"socket-edge\"/><path d=\"M142.0,70.0 H534.8 Q538.8,70.0 538.8,74.0 V78.0 Q538.8,82.0 534.8,82.0 H142.0 Z\" class=\"peg-fit\"/><rect x=\"529.6\" y=\"70\" width=\"18.3\" height=\"12\" rx=\"2\" class=\"unc\"/><title>KSOL: predicted 274 uM, measured 295 uM -- how much dissolves in water</title><line x1=\"544.0\" y1=\"67\" x2=\"544.0\" y2=\"85\" class=\"ghost\"/><text x=\"664\" y=\"80\" text-anchor=\"end\" class=\"val\">274 uM</text><g transform=\"translate(676,73)\"><polyline points=\"0,3 2.6,5.8 7,0.4\" class=\"mk mk-fit\"/></g><text x=\"690\" y=\"80\" class=\"v-fit\">fits</text></g><g class=\"row\"><text x=\"128\" y=\"111\" text-anchor=\"end\" class=\"lbl\">HLM</text><text x=\"128\" y=\"123\" text-anchor=\"end\" class=\"req\">max 20 mL/min/kg</text><rect x=\"142.0\" y=\"98\" width=\"182.4\" height=\"26\" rx=\"3\" class=\"socket\"/><line x1=\"142.0\" y1=\"98\" x2=\"142.0\" y2=\"124\" class=\"socket-edge\"/><line x1=\"324.4\" y1=\"98\" x2=\"324.4\" y2=\"124\" class=\"socket-edge\"/><path d=\"M142.0,106.0 H256.6 Q260.6,106.0 260.6,110.0 V114.0 Q260.6,118.0 256.6,118.0 H142.0 Z\" class=\"peg-fit\"/><rect x=\"253.8\" y=\"106\" width=\"13.6\" height=\"12\" rx=\"2\" class=\"unc\"/><title>HLM: predicted 6 mL/min/kg, measured 8 mL/min/kg -- how fast a human liver destroys it</title><line x1=\"276.3\" y1=\"103\" x2=\"276.3\" y2=\"121\" class=\"ghost\"/><text x=\"664\" y=\"116\" text-anchor=\"end\" class=\"val\">6 mL/min/kg</text><g transform=\"translate(676,109)\"><polyline points=\"0,3 2.6,5.8 7,0.4\" class=\"mk mk-fit\"/></g><text x=\"690\" y=\"116\" class=\"v-fit\">fits</text></g><g class=\"row\"><text x=\"128\" y=\"147\" text-anchor=\"end\" class=\"lbl\">MLM</text><rect x=\"142\" y=\"134\" width=\"414\" height=\"26\" rx=\"3\" class=\"socket-off\"/><path d=\"M142.0,142.0 H368.5 Q372.5,142.0 372.5,146.0 V150.0 Q372.5,154.0 368.5,154.0 H142.0 Z\" class=\"peg-idle\"/><rect x=\"354.4\" y=\"142\" width=\"36.2\" height=\"12\" rx=\"2\" class=\"unc\"/><title>MLM: predicted 137 mL/min/kg, measured 59 mL/min/kg -- how fast a mouse liver destroys it</title><line x1=\"333.8\" y1=\"139\" x2=\"333.8\" y2=\"157\" class=\"ghost\"/><text x=\"664\" y=\"152\" text-anchor=\"end\" class=\"val\">137 mL/min/kg</text><g transform=\"translate(676,145)\"><circle cx=\"3.4\" cy=\"3.2\" r=\"1.6\" class=\"mk-dot\"/></g><text x=\"690\" y=\"152\" class=\"v-unknown\">not required</text></g><g class=\"row\"><text x=\"128\" y=\"183\" text-anchor=\"end\" class=\"lbl\">Papp</text><text x=\"128\" y=\"195\" text-anchor=\"end\" class=\"req\">min 5.0 1e-6 cm/s</text><rect x=\"330.7\" y=\"170\" width=\"225.3\" height=\"26\" rx=\"3\" class=\"socket\"/><line x1=\"330.7\" y1=\"170\" x2=\"330.7\" y2=\"196\" class=\"socket-edge\"/><line x1=\"556.0\" y1=\"170\" x2=\"556.0\" y2=\"196\" class=\"socket-edge\"/><path d=\"M142.0,178.0 H427.3 Q431.3,178.0 431.3,182.0 V186.0 Q431.3,190.0 427.3,190.0 H142.0 Z\" class=\"peg-fit\"/><rect x=\"412.9\" y=\"178\" width=\"36.8\" height=\"12\" rx=\"2\" class=\"unc\"/><title>Papp: predicted 14.6 1e-6 cm/s -- how fast it crosses the gut wall</title><text x=\"664\" y=\"188\" text-anchor=\"end\" class=\"val\">14.6 1e-6 cm/s</text><g transform=\"translate(676,181)\"><polyline points=\"0,3 2.6,5.8 7,0.4\" class=\"mk mk-fit\"/></g><text x=\"690\" y=\"188\" class=\"v-fit\">fits</text></g><g class=\"row\"><text x=\"128\" y=\"219\" text-anchor=\"end\" class=\"lbl\">Efflux</text><text x=\"128\" y=\"231\" text-anchor=\"end\" class=\"req\">max 2.0 ratio</text><rect x=\"142.0\" y=\"206\" width=\"85.8\" height=\"26\" rx=\"3\" class=\"socket\"/><line x1=\"142.0\" y1=\"206\" x2=\"142.0\" y2=\"232\" class=\"socket-edge\"/><line x1=\"227.8\" y1=\"206\" x2=\"227.8\" y2=\"232\" class=\"socket-edge\"/><path d=\"M142.0,214.0 H203.1 Q207.1,214.0 207.1,218.0 V222.0 Q207.1,226.0 203.1,226.0 H142.0 Z\" class=\"peg-fit\"/><rect x=\"197.8\" y=\"214\" width=\"18.6\" height=\"12\" rx=\"2\" class=\"unc\"/><title>Efflux: predicted 1.3 ratio -- how hard cells pump it back out</title><text x=\"664\" y=\"224\" text-anchor=\"end\" class=\"val\">1.3 ratio</text><g transform=\"translate(676,217)\"><polyline points=\"0,3 2.6,5.8 7,0.4\" class=\"mk mk-fit\"/></g><text x=\"690\" y=\"224\" class=\"v-fit\">fits</text></g><g class=\"row\"><text x=\"128\" y=\"255\" text-anchor=\"end\" class=\"lbl\">MPPB</text><rect x=\"142\" y=\"242\" width=\"414\" height=\"26\" rx=\"3\" class=\"socket-off\"/><path d=\"M142.0,250.0 H429.5 Q433.5,250.0 433.5,254.0 V258.0 Q433.5,262.0 429.5,262.0 H142.0 Z\" class=\"peg-idle\"/><rect x=\"417.9\" y=\"250\" width=\"31.2\" height=\"12\" rx=\"2\" class=\"unc\"/><title>MPPB: predicted 24.8 % unbound -- fraction free in blood, able to act</title><text x=\"664\" y=\"260\" text-anchor=\"end\" class=\"val\">24.8 % unbound</text><g transform=\"translate(676,253)\"><circle cx=\"3.4\" cy=\"3.2\" r=\"1.6\" class=\"mk-dot\"/></g><text x=\"690\" y=\"260\" class=\"v-unknown\">not required</text></g><g class=\"row\"><text x=\"128\" y=\"291\" text-anchor=\"end\" class=\"lbl\">MBPB</text><text x=\"128\" y=\"303\" text-anchor=\"end\" class=\"req\">min 1.0 % unbound</text><rect x=\"204.2\" y=\"278\" width=\"351.8\" height=\"26\" rx=\"3\" class=\"socket\"/><line x1=\"204.2\" y1=\"278\" x2=\"204.2\" y2=\"304\" class=\"socket-edge\"/><line x1=\"556.0\" y1=\"278\" x2=\"556.0\" y2=\"304\" class=\"socket-edge\"/><path d=\"M142.0,286.0 H337.3 Q341.3,286.0 341.3,290.0 V294.0 Q341.3,298.0 337.3,298.0 H142.0 Z\" class=\"peg-fit\"/><rect x=\"330.4\" y=\"286\" width=\"21.7\" height=\"12\" rx=\"2\" class=\"unc\"/><title>MBPB: predicted 8.2 % unbound -- fraction free in brain tissue</title><text x=\"664\" y=\"296\" text-anchor=\"end\" class=\"val\">8.2 % unbound</text><g transform=\"translate(676,289)\"><polyline points=\"0,3 2.6,5.8 7,0.4\" class=\"mk mk-fit\"/></g><text x=\"690\" y=\"296\" class=\"v-fit\">fits</text></g><g class=\"row\"><text x=\"128\" y=\"327\" text-anchor=\"end\" class=\"lbl\">MGMB</text><rect x=\"142\" y=\"314\" width=\"414\" height=\"26\" rx=\"3\" class=\"socket-off\"/><path d=\"M142.0,322.0 H368.6 Q372.6,322.0 372.6,326.0 V330.0 Q372.6,334.0 368.6,334.0 H142.0 Z\" class=\"peg-idle\"/><rect x=\"362.0\" y=\"322\" width=\"21.1\" height=\"12\" rx=\"2\" class=\"unc\"/><title>MGMB: predicted 12.1 % unbound -- fraction free in muscle tissue</title><text x=\"664\" y=\"332\" text-anchor=\"end\" class=\"val\">12.1 % unbound</text><g transform=\"translate(676,325)\"><circle cx=\"3.4\" cy=\"3.2\" r=\"1.6\" class=\"mk-dot\"/></g><text x=\"690\" y=\"332\" class=\"v-unknown\">not required</text></g><line x1=\"142\" y1=\"352\" x2=\"556\" y2=\"352\" class=\"axis\"/><text x=\"142\" y=\"370\" class=\"cap\">band = required range  /  bar = prediction  /  pale tip = model uncertainty  /  dashed line = measured value</text><text x=\"142\" y=\"384\" class=\"cap\">every row has its own scale; the number on the right is the prediction</text></svg></div></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "4cc3526d75216f207f875b70b68174a1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>How to read it.</strong> The shaded band is what this project will accept. The bar is\nwhat our model predicts. The pale tip on the bar is how much the five models in\nthe ensemble disagreed. The dashed line, where it appears, is the value someone\nactually measured in a lab.</span>\n<span class=\"paragraph\">The gap between the bar and the dashed line is the model being wrong. Keep an\neye on it -- the rest of this notebook is about when that gap opens up.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "6a3e436b89e180479e57053b23ad7daf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"how-many-real-molecules-actually-click\">How many real molecules actually click?</h3>\n<span class=\"paragraph\">Every molecule here was made by a chemist who wanted it to work. Applying each\nproject's full requirement list to the model's predictions for all\n<strong>7,608</strong> of them:</span>\n<span class=\"paragraph\"><marimo-ui-element object-id='Kclp-0' random-id='e3e6125a-f9b6-4a5d-e23a-74176585f557'><marimo-table data-initial-value='[]' data-label='null' data-data='&quot;[{&#92;&quot;project&#92;&quot;:&#92;&quot;Oral drug&#92;&quot;,&#92;&quot;requirements&#92;&quot;:6,&#92;&quot;molecules that click&#92;&quot;:1521,&#92;&quot;share&#92;&quot;:&#92;&quot;20.0%&#92;&quot;},{&#92;&quot;project&#92;&quot;:&#92;&quot;Brain drug&#92;&quot;,&#92;&quot;requirements&#92;&quot;:6,&#92;&quot;molecules that click&#92;&quot;:1052,&#92;&quot;share&#92;&quot;:&#92;&quot;13.8%&#92;&quot;},{&#92;&quot;project&#92;&quot;:&#92;&quot;Muscle drug&#92;&quot;,&#92;&quot;requirements&#92;&quot;:5,&#92;&quot;molecules that click&#92;&quot;:652,&#92;&quot;share&#92;&quot;:&#92;&quot;8.6%&#92;&quot;},{&#92;&quot;project&#92;&quot;:&#92;&quot;Everything at once&#92;&quot;,&#92;&quot;requirements&#92;&quot;:9,&#92;&quot;molecules that click&#92;&quot;:362,&#92;&quot;share&#92;&quot;:&#92;&quot;4.8%&#92;&quot;}]&quot;' data-total-rows='4' data-total-columns='4' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='4' data-field-types='[[&quot;project&quot;,[&quot;string&quot;,&quot;str&quot;]],[&quot;requirements&quot;,[&quot;integer&quot;,&quot;int64&quot;]],[&quot;molecules that click&quot;,[&quot;integer&quot;,&quot;int64&quot;]],[&quot;share&quot;,[&quot;string&quot;,&quot;str&quot;]]]' data-show-filters='true' data-show-download='true' data-show-search='true' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='false' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-hidden-columns='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element></span>\n<span class=\"paragraph\">Even on the loosest preset most molecules fail something. That is the job:\nnot optimising a property, but satisfying all of them at once -- what chemists\ncall <strong>whack-a-mole</strong>, because fixing one usually breaks another.</span>\n<span class=\"paragraph\">And there is a second problem hiding in the data.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "a849f19896d777e6bb55b3c27a94a36d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"the-measurements-nobody-made\">The measurements nobody made</h3>\n<span class=\"paragraph\">Assays cost money, so cheap ones run on everything and expensive ones run only on\nmolecules that already look good. Here is how often each property was measured\nat all:</span></span><marimo-mime-renderer data-mime='&quot;application/vnd.vegalite.v6+json&quot;' data-data='&quot;{&#92;n  &#92;&quot;&#36;schema&#92;&quot;: &#92;&quot;https://vega.github.io/schema/vega-lite/v6.4.1.json&#92;&quot;,&#92;n  &#92;&quot;config&#92;&quot;: {&#92;n    &#92;&quot;view&#92;&quot;: {&#92;n      &#92;&quot;continuousHeight&#92;&quot;: 300,&#92;n      &#92;&quot;continuousWidth&#92;&quot;: 300&#92;n    }&#92;n  },&#92;n  &#92;&quot;data&#92;&quot;: {&#92;n    &#92;&quot;name&#92;&quot;: &#92;&quot;data-abfbb2f9d1f9a4911b31622e72093f0e&#92;&quot;&#92;n  },&#92;n  &#92;&quot;datasets&#92;&quot;: {&#92;n    &#92;&quot;data-abfbb2f9d1f9a4911b31622e72093f0e&#92;&quot;: [&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;LogD&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 94.6113405933158,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;train&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;KSOL&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 96.28238828389036,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;train&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;HLM&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 70.57829515583927,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;train&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;MLM&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 84.90424333458505,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;train&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;Papp&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 40.49943672549756,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;train&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;Efflux&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 40.57453999248967,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;train&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;MPPB&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 24.446113405933158,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;train&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;MBPB&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 18.306421329327826,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;train&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;MGMB&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 4.168231318062335,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;train&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;LogD&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 99.47414548641542,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;test&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;KSOL&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 95.0920245398773,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;test&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;HLM&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 34.268185801928134,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;test&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;MLM&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 51.270815074496056,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;test&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;Papp&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 70.8150744960561,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;test&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;Efflux&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 70.8150744960561,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;test&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;MPPB&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 19.894829097283086,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;test&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;MBPB&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 19.763365468886942,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;test&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;endpoint&#92;&quot;: &#92;&quot;MGMB&#92;&quot;,&#92;n        &#92;&quot;measured&#92;&quot;: 9.15863277826468,&#92;n        &#92;&quot;split&#92;&quot;: &#92;&quot;test&#92;&quot;&#92;n      }&#92;n    ]&#92;n  },&#92;n  &#92;&quot;encoding&#92;&quot;: {&#92;n    &#92;&quot;color&#92;&quot;: {&#92;n      &#92;&quot;field&#92;&quot;: &#92;&quot;split&#92;&quot;,&#92;n      &#92;&quot;legend&#92;&quot;: {&#92;n        &#92;&quot;orient&#92;&quot;: &#92;&quot;top&#92;&quot;,&#92;n        &#92;&quot;title&#92;&quot;: null&#92;n      },&#92;n      &#92;&quot;scale&#92;&quot;: {&#92;n        &#92;&quot;domain&#92;&quot;: [&#92;n          &#92;&quot;train&#92;&quot;,&#92;n          &#92;&quot;test&#92;&quot;&#92;n        ],&#92;n        &#92;&quot;range&#92;&quot;: [&#92;n          &#92;&quot;#2a78d6&#92;&quot;,&#92;n          &#92;&quot;#eb6834&#92;&quot;&#92;n        ]&#92;n      },&#92;n      &#92;&quot;type&#92;&quot;: &#92;&quot;nominal&#92;&quot;&#92;n    },&#92;n    &#92;&quot;tooltip&#92;&quot;: [&#92;n      {&#92;n        &#92;&quot;field&#92;&quot;: &#92;&quot;endpoint&#92;&quot;,&#92;n        &#92;&quot;type&#92;&quot;: &#92;&quot;nominal&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;field&#92;&quot;: &#92;&quot;split&#92;&quot;,&#92;n        &#92;&quot;type&#92;&quot;: &#92;&quot;nominal&#92;&quot;&#92;n      },&#92;n      {&#92;n        &#92;&quot;field&#92;&quot;: &#92;&quot;measured&#92;&quot;,&#92;n        &#92;&quot;format&#92;&quot;: &#92;&quot;.1f&#92;&quot;,&#92;n        &#92;&quot;type&#92;&quot;: &#92;&quot;quantitative&#92;&quot;&#92;n      }&#92;n    ],&#92;n    &#92;&quot;x&#92;&quot;: {&#92;n      &#92;&quot;field&#92;&quot;: &#92;&quot;measured&#92;&quot;,&#92;n      &#92;&quot;scale&#92;&quot;: {&#92;n        &#92;&quot;domain&#92;&quot;: [&#92;n          0,&#92;n          100&#92;n        ]&#92;n      },&#92;n      &#92;&quot;title&#92;&quot;: &#92;&quot;% of molecules measured&#92;&quot;,&#92;n      &#92;&quot;type&#92;&quot;: &#92;&quot;quantitative&#92;&quot;&#92;n    },&#92;n    &#92;&quot;y&#92;&quot;: {&#92;n      &#92;&quot;field&#92;&quot;: &#92;&quot;endpoint&#92;&quot;,&#92;n      &#92;&quot;sort&#92;&quot;: [&#92;n        &#92;&quot;LogD&#92;&quot;,&#92;n        &#92;&quot;KSOL&#92;&quot;,&#92;n        &#92;&quot;HLM&#92;&quot;,&#92;n        &#92;&quot;MLM&#92;&quot;,&#92;n        &#92;&quot;Papp&#92;&quot;,&#92;n        &#92;&quot;Efflux&#92;&quot;,&#92;n        &#92;&quot;MPPB&#92;&quot;,&#92;n        &#92;&quot;MBPB&#92;&quot;,&#92;n        &#92;&quot;MGMB&#92;&quot;&#92;n      ],&#92;n      &#92;&quot;title&#92;&quot;: null,&#92;n      &#92;&quot;type&#92;&quot;: &#92;&quot;nominal&#92;&quot;&#92;n    },&#92;n    &#92;&quot;yOffset&#92;&quot;: {&#92;n      &#92;&quot;field&#92;&quot;: &#92;&quot;split&#92;&quot;,&#92;n      &#92;&quot;type&#92;&quot;: &#92;&quot;nominal&#92;&quot;&#92;n    }&#92;n  },&#92;n  &#92;&quot;height&#92;&quot;: 320,&#92;n  &#92;&quot;mark&#92;&quot;: {&#92;n    &#92;&quot;cornerRadiusBottomRight&#92;&quot;: 4,&#92;n    &#92;&quot;cornerRadiusTopRight&#92;&quot;: 4,&#92;n    &#92;&quot;height&#92;&quot;: 12,&#92;n    &#92;&quot;type&#92;&quot;: &#92;&quot;bar&#92;&quot;&#92;n  },&#92;n  &#92;&quot;usermeta&#92;&quot;: {&#92;n    &#92;&quot;embedOptions&#92;&quot;: {}&#92;n  },&#92;n  &#92;&quot;width&#92;&quot;: &#92;&quot;container&#92;&quot;&#92;n}&quot;'></marimo-mime-renderer><span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Muscle binding exists for <strong>4%</strong> of the training molecules. Only <strong>264 of 7,608</strong>\nmolecules have all nine.</span>\n<span class=\"paragraph\">This is not random missingness. The molecules that reached the expensive assays\nare the ones that had <em>already passed</em> the cheap ones -- so the rare endpoints\ndescribe a pre-filtered, unusually well-behaved slice of chemistry. Any model\ntrained on them inherits that bias, and so does any score you use to judge it.</span></span></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "d857d100dfdaa7c7b26280d4e5efbc18",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h3 id=\"appendix-the-code-behind-this-notebook\">Appendix -- the code behind this notebook</h3>\n<span class=\"paragraph\">The library below is inlined so this file runs anywhere with no repo beside it.\nIt is developed and unit-tested separately; see the repository.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "a2796fab4dfa923c8c825b415a590f17",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "36b95e7654d373ddf00748cb0495a270",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "700aa6198abecc69f9da54736ff8101e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "06108f451b2cf610ba26be7ce713ff63",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "6028e099c705787eb1602957a134ec3d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "49290c095ea73ff46fa9046826168e39",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "3fb0935dd2a6ec9434c1007cf14bf844",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
