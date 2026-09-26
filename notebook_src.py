@@ -254,7 +254,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(highlight, mo, neighborhood, rounds):
+def _(highlight, mo, n_atoms, neighborhood, rounds):
     _smi = "Cc1ccc(C(=O)Nc2ccc(OC)cc2)cc1"
     _seen = neighborhood(_smi, 0, rounds.value)
     mo.vstack(
@@ -266,8 +266,7 @@ def _(highlight, mo, neighborhood, rounds):
                     mo.md(
                         f"""
     After **{rounds.value}** round{"" if rounds.value == 1 else "s"}, the highlighted
-    atom has heard from **{len(_seen)} of {_smi.count("c") + _smi.count("C") + _smi.count("O") + _smi.count("N")}**
-    atoms.
+    atom has heard from **{len(_seen)} of {n_atoms(_smi)}** atoms.
 
     This is the model's receptive field. Nothing outside it can affect what this
     atom contributes. Pool every atom's final vector and you get one vector for the
@@ -456,7 +455,7 @@ heavy atom, and ask how often that one change moves the value by 10x or more:
 
 | LogD | KSOL | HLM | MLM | Efflux |
 |---|---|---|---|---|
-| **32.6%** | 19.7% | 10.3% | 9.7% | **4.6%** |
+| **32.5%** | 19.7% | 10.3% | 9.7% | **4.6%** |
 
 LogD -- the property we called smooth -- moves on a **third** of all one-atom
 edits. Efflux, the one we called jumpy, moves on one in twenty. The hypothesis is
@@ -1452,6 +1451,18 @@ def _():
         ]
     }
     return ABLATION, REFUTED
+
+
+@app.cell
+def _():
+    def n_atoms(smiles: str) -> int:
+        """Heavy-atom count. Counting letters in a SMILES string is not this."""
+        from rdkit import Chem
+
+        mol = Chem.MolFromSmiles(smiles)
+        return mol.GetNumHeavyAtoms() if mol else 0
+
+    return (n_atoms,)
 
 
 @app.cell
