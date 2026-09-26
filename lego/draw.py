@@ -138,3 +138,28 @@ def changed_atoms(smiles_a: str, smiles_b: str) -> tuple[list[int], list[int]]:
         [i for i in range(a.GetNumAtoms()) if i not in ma],
         [i for i in range(b.GetNumAtoms()) if i not in mb],
     )
+
+
+def neighborhood(smiles: str, center: int, radius: int) -> list[int]:
+    """Atoms within `radius` bonds of `center`.
+
+    This is exactly what one atom can "see" after `radius` rounds of message
+    passing, so a slider over radius shows the model's receptive field growing --
+    no trained model required to make the mechanism visible.
+    """
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None or not 0 <= center < mol.GetNumAtoms():
+        return []
+    seen = {center}
+    frontier = {center}
+    for _ in range(max(radius, 0)):
+        nxt = set()
+        for idx in frontier:
+            for nb in mol.GetAtomWithIdx(idx).GetNeighbors():
+                if nb.GetIdx() not in seen:
+                    nxt.add(nb.GetIdx())
+        seen |= nxt
+        frontier = nxt
+        if not frontier:
+            break
+    return sorted(seen)

@@ -47,7 +47,7 @@ EXPORTS = (
     "EDITS", "BY_KEY", "apply_edit", "options", "products",
     "find_pairs", "fragment",
     "picture", "painted", "highlight", "changed_atoms",
-    "Surrogate", "featurize",
+    "Surrogate", "featurize", "neighborhood",
     "auc_ratio", "apparent_clearance", "severity",
 )
 

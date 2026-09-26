@@ -309,3 +309,41 @@ class TestBoard:
         svg = render(PRESETS["Brain drug"], self._pegs())
         assert "prefers-color-scheme: dark" in svg
         assert '[data-theme="dark"]' in svg
+
+
+class TestDraw:
+    def test_neighborhood_grows_with_radius(self):
+        from lego.draw import neighborhood
+
+        smi = "CCCCCC"  # a chain, so growth is easy to reason about
+        sizes = [len(neighborhood(smi, 0, r)) for r in range(5)]
+        assert sizes == [1, 2, 3, 4, 5]
+
+    def test_neighborhood_saturates_at_whole_molecule(self):
+        from lego.draw import neighborhood
+
+        assert len(neighborhood("c1ccccc1", 0, 99)) == 6
+
+    def test_neighborhood_rejects_bad_input(self):
+        from lego.draw import neighborhood
+
+        assert neighborhood("nonsense", 0, 2) == []
+        assert neighborhood("CCO", 99, 2) == []
+
+    def test_pictures_are_svg(self):
+        from lego.draw import highlight, painted, picture
+
+        assert picture("CCO").startswith("<?xml") or "<svg" in picture("CCO")
+        assert "<svg" in painted("CCO", {0: 0.5, 1: -0.5})
+        assert "<svg" in highlight("CCO", [0])
+
+    def test_bad_smiles_gives_empty_svg_not_crash(self):
+        from lego.draw import picture
+
+        assert "<svg" in picture("nonsense")
+
+    def test_changed_atoms_finds_the_edit(self):
+        from lego.draw import changed_atoms
+
+        a, b = changed_atoms("Cc1ccccc1", "CCc1ccccc1")
+        assert len(b) == 1 and a == []
