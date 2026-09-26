@@ -2,4 +2,11 @@
 __pycache__/
 *.pyc
 runs/
-artifacts/
+data/only_*.csv
+
+# Artifacts: keep the small bundle the notebook is built from, drop the rest.
+artifacts/*
+!artifacts/bundle.b64
+
+# Credentials never live in this repo.
+*.token
