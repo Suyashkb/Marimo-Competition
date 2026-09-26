@@ -10,3 +10,4 @@ artifacts/*
 
 # Credentials never live in this repo.
 *.token
+__marimo__/
