@@ -58,14 +58,17 @@ Panels: *For chemists* — the assay cascade and why cheap assays run first. *Fo
 2. Then the cost of getting it wrong: **test error vs depth** (needs ablation, see TODO).
 3. **Single-task vs multitask toggle** → the muscle-binding peg sharpens.
 
-**Evidence — and what it does and does not show:**
-- ✅ **Family comparison:** the GNN ensemble beats LightGBM on **9/9** endpoints, mean MAE **0.288 vs 0.335**. This says the graph family wins. It says **nothing about why** — depth, multitask sharing and CheMeleon pretraining are all confounded in that one number. An earlier draft of this outline treated it as proof of the mechanism; it is not.
-- ⏳ **Mechanism (pending `ablate2.py`):** depth sweep at scratch init, CheMeleon vs scratch, and single-task vs multitask at 3 seeds each. The first attempt was invalid (`--depth` is silently ignored under `--from-foundation`, so all five "depth" models were identical; and one seed cannot resolve effects when seed noise reaches 23%).
-- 🔎 **Lead under test:** single-task MGMB (177 training values) **diverged to NaN weights** while the multitask model predicts it at MAE 0.179. If it reproduces across seeds, the claim becomes "single-task does not work at all here", which is far stronger than any percentage.
+**Evidence (all from `ablate2.py`, 3 seeds per setting, temporal test split):**
 
-**Any mechanism claim in this part must cite `ablate2.py` with seed error bars, or be cut.** The free receptive-field visual stays regardless: it teaches the mechanism without asserting a performance claim.
+- ✅ **Family comparison:** the GNN ensemble beats LightGBM on **9/9** endpoints, mean MAE **0.288 vs 0.335**. This says the graph family wins; it says **nothing about why** — an earlier draft treated it as proof of mechanism, which it is not.
+- ✅ **Depth helps, with diminishing returns.** Mean MAE at scratch init: **d2 0.344 ±0.003 → d4 0.313 ±0.005 → d6 0.307 ±0.004**. The d2→d4 step is many SDs; d4→d6 is marginal. *This is the one positive mechanism claim in the notebook.*
+- ❌ **CheMeleon pretraining buys nothing here.** CheMeleon **0.315 ±0.007** vs scratch at the same depth **0.307 ±0.004**. Every challenge write-up names pretraining as a key success factor; at this dataset size (7.6k molecules) we cannot measure a benefit. Stated as a scoped negative, not a refutation of the method.
+- ❌ **Multitask sharing buys nothing, and hurts one endpoint.** Single-task vs multitask MAE: LogD 0.413 vs 0.419 (overlapping), Papp 0.313 vs 0.303 (overlapping), **MBPB 0.165 vs 0.192 — multitask 16% worse, non-overlapping**, MGMB 0.201 vs 0.207 (overlapping). Naive all-nine sharing causes **negative transfer** — which is precisely why the leading teams grouped tasks by affinity rather than lumping them. Our result agrees with theirs by failing where they took care.
 
-**Takeaway (if the ablation supports it):** **A graph model invents its own features by letting atoms talk to their neighbours — and sharing one body across nine properties is what makes the rarest ones trainable at all.**
+**A trap worth a screen of its own (and a near-miss of ours):**
+Single-task training on the sparse multitask CSV **silently produced NaN weights on all 3 seeds**. The cause was not scarcity: with 4,616 of 4,793 rows unlabelled for MGMB and a batch size of 64, most batches contained **zero** labelled molecules, so the masked loss averaged over an empty set. Filtering to labelled rows first, the same model trains fine (0.201 ±0.004). We nearly reported "single-task cannot learn from 177 points" — a false conclusion from a tooling artefact.
+
+**Takeaway:** **Depth is the one knob that reliably pays. The two everyone cites — pretraining and multitask sharing — buy nothing here, and sharing all nine properties actively hurts one of them.**
 
 ---
 
