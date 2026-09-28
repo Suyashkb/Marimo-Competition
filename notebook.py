@@ -32,20 +32,19 @@ def _(mo):
 
     </div>
 
-    A drug has to be many things at once. Soluble enough to dissolve. Greasy enough
-    to cross a membrane, but not so greasy it falls apart. Slow enough to survive the
-    liver. Free enough in the blood to actually reach anything.
+    A drug must be many things at once: soluble, greasy enough to cross a membrane
+    but not so greasy it won't dissolve, slow enough to survive the liver, free
+    enough in the blood to reach anything.
 
     Miss **one** and the molecule is dead, however good the rest looks.
 
-    So this notebook draws a molecule as a **Lego piece**: one peg per property, and
-    a **socket** that a given project will accept. The piece clicks, or it doesn't.
+    So here a molecule is a **Lego piece** -- one peg per property -- and a
+    **socket** holds what a project will accept. It clicks, or it doesn't.
 
-    Then it asks the question it was really built for: *when the peg comes out the
-    wrong length, whose fault is it -- the model's, or the data's?*
+    Then the real question: when a peg comes out wrong, is that the **model's**
+    fault or the **data's**?
 
-    The answer turns out to be different for every one of the nine properties. That
-    is the whole notebook.
+    The answer is different for all nine properties.
     """
     )
     return
@@ -82,22 +81,19 @@ def _(mo):
         r"""
     ## Where all of this comes from
 
-    **The data** is real. Expansion Therapeutics ran drug-discovery campaigns against
-    RNA-mediated diseases -- myotonic dystrophy, ALS, dementia -- and released
-    **7,608 molecules** with up to nine ADMET measurements each, under CC-BY-4.0.
-    Over 370 teams competed on it in the OpenADMET-ExpansionRx blind challenge.
+    **The data is real.** Expansion Therapeutics released **7,608 molecules** with up
+    to nine ADMET measurements each (CC-BY-4.0), from campaigns against myotonic
+    dystrophy, ALS and dementia. Over 370 teams competed on it.
 
-    **The models** are ours, trained for this notebook on the challenge's own
-    **temporal split**: every molecule in the test set was made *after* every
-    molecule in the training set.
+    **The models are ours**, trained on the challenge's **temporal split**: every
+    test molecule was made *after* every training molecule.
 
-    > The challenge winner, Inductive Bio's *Beacon*, is proprietary -- no code, no
-    > weights. Nothing here reproduces it. We rebuilt the *public* recipe that the
-    > published write-ups describe: a Chemprop D-MPNN with CheMeleon initialisation,
-    > five seeds, next to gradient-boosted trees on fingerprints.
+    > The winner (Inductive Bio's *Beacon*) is proprietary and is not reproduced
+    > here. This rebuilds the public recipe: a Chemprop D-MPNN with CheMeleon
+    > initialisation, five seeds, beside gradient-boosted trees.
 
-    Every number in this notebook came out of those runs, on that split. Where a
-    result contradicted what we expected, it is still here -- four of them do.
+    Every number below came from those runs. Four results contradicted what we
+    expected -- they are still here.
     """
     )
     return
@@ -124,25 +120,17 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(PRESETS, mo):
+def _(EXAMPLES, PRESETS, mo):
+    # Defined and shown together: a cell that only assigns a widget renders as a
+    # blank gap. Their .value is read elsewhere, which is what marimo requires.
     preset_choice = mo.ui.dropdown(
         options=list(PRESETS), value="Brain drug", label="This project is making a"
     )
-    return (preset_choice,)
-
-
-@app.cell(hide_code=True)
-def _(EXAMPLES, mo):
     molecule_choice = mo.ui.dropdown(
         options=EXAMPLES, value=list(EXAMPLES)[0], label="Molecule"
     )
-    return (molecule_choice,)
-
-
-@app.cell(hide_code=True)
-def _(mo, molecule_choice, preset_choice):
     mo.hstack([preset_choice, molecule_choice], justify="start", gap=2)
-    return
+    return molecule_choice, preset_choice
 
 
 @app.cell(hide_code=True)
@@ -249,7 +237,10 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    rounds = mo.ui.slider(0, 5, value=2, label="Rounds of message passing", show_value=True)
+    rounds = mo.ui.slider(
+        0, 5, value=2, label="Rounds of message passing", show_value=True
+    )
+    rounds
     return (rounds,)
 
 
@@ -257,27 +248,21 @@ def _(mo):
 def _(highlight, mo, n_atoms, neighborhood, rounds):
     _smi = "Cc1ccc(C(=O)Nc2ccc(OC)cc2)cc1"
     _seen = neighborhood(_smi, 0, rounds.value)
-    mo.vstack(
+    mo.hstack(
         [
-            rounds,
-            mo.hstack(
-                [
-                    mo.Html(highlight(_smi, _seen, 420, 250)),
-                    mo.md(
-                        f"""
+            mo.Html(highlight(_smi, _seen, 420, 250)),
+            mo.md(
+                f"""
     After **{rounds.value}** round{"" if rounds.value == 1 else "s"}, the highlighted
     atom has heard from **{len(_seen)} of {n_atoms(_smi)}** atoms.
 
-    This is the model's receptive field. Nothing outside it can affect what this
-    atom contributes. Pool every atom's final vector and you get one vector for the
-    whole molecule -- and from that, nine numbers.
+    That is the model's receptive field. Nothing outside it can change what this
+    atom contributes.
     """
-                    ),
-                ],
-                widths=[1, 1],
-                align="center",
             ),
-        ]
+        ],
+        widths=[1, 1],
+        align="center",
     )
     return
 
@@ -338,9 +323,8 @@ def _(ABLATION, mo):
         f"""
     ### Two things that did not work
 
-    **Pretraining bought nothing.** CheMeleon is a foundation model pretrained on a
-    million molecules, and every published write-up of this challenge names
-    pretraining as a key ingredient. Starting from it, versus starting from random
+    **Pretraining bought nothing.** CheMeleon is pretrained on a million molecules,
+    and every write-up of this challenge calls pretraining essential. Against random
     weights at the same depth:
 
     | | test error (MAE) |
@@ -348,13 +332,12 @@ def _(ABLATION, mo):
     | CheMeleon initialisation | {_p["chemeleon"]:.3f} ± {_p["chemeleon_sd"]:.3f} |
     | Random initialisation | **{_p["scratch"]:.3f} ± {_p["scratch_sd"]:.3f}** |
 
-    No measurable benefit here. That is not a refutation of the method -- CheMeleon's
-    own paper claims the advantage is largest on *small* datasets, and 7,608
-    molecules is not small. It is a warning that "use a foundation model" is not
-    free advice.
+    Nothing measurable. CheMeleon's own paper claims the advantage is largest on
+    *small* datasets, and 7,608 molecules is not small -- so this is a warning about
+    free advice, not a refutation.
 
-    **Sharing all nine properties hurt.** The appeal of one model with nine heads is
-    that rare properties borrow strength from common ones. Measured, three seeds each:
+    **Sharing all nine properties hurt.** The appeal of nine heads on one body is
+    that rare properties borrow from common ones. Three seeds each:
 
     | endpoint | training values | own model | shared model | |
     |---|---|---|---|---|
@@ -363,10 +346,10 @@ def _(ABLATION, mo):
     | **MBPB** | **975** | **{_m["MBPB"][0]:.3f}** | **{_m["MBPB"][1]:.3f}** | **16% worse shared** |
     | MGMB | 177 | {_m["MGMB"][0]:.3f} | {_m["MGMB"][1]:.3f} | no difference |
 
-    Brain binding got *worse* by sharing, and the seed ranges do not overlap. This is
-    **negative transfer**: nine properties pulling one set of weights in nine
-    directions. It is exactly why the leading teams grouped related endpoints instead
-    of lumping all of them together -- we failed where they took care.
+    Brain binding got **worse** by sharing, with no overlap between seed ranges.
+    That is **negative transfer** -- nine properties pulling one set of weights in
+    nine directions. The leading teams grouped related endpoints instead of lumping
+    them; we failed exactly where they took care.
     """
     )
     return
@@ -509,23 +492,19 @@ def _(alt, mo, pd, surprise_table):
             (_pts + _labels).properties(height=300, width="container"),
             mo.md(
                 r"""
-    **LogD, top left: moves constantly, surprises nobody.** Greasiness is close to
-    additive -- each chemical group contributes a roughly fixed increment. That is
-    precisely how hand-built LogP calculators have worked since the 1970s, and a
-    model learns it easily. Big changes, all of them predictable.
+    **LogD, top left -- moves constantly, surprises nobody.** Greasiness is roughly
+    additive: each group adds a fixed increment. That is how hand-built LogP
+    calculators have worked since the 1970s, and a model picks it up easily.
 
-    **Efflux, bottom right: moves rarely, blindsides the model.** Whether a cell's
-    pump grabs a molecule is closer to a threshold than a sum: below the line
-    nothing happens, above it the molecule is thrown out. The model, fitting a
-    smooth function, has no way to see the edge coming.
+    **Efflux, bottom right -- moves rarely, blindsides the model.** Whether a pump
+    grabs a molecule is a threshold, not a sum. A smooth model never sees the edge
+    coming.
 
-    > **Honesty note.** With only nine endpoints this is suggestive, not
-    > statistically significant (Pearson −0.47, Spearman −0.26 over the six with
-    > enough cases). The claim rests on the two labelled examples, which are
-    > well-powered -- 4,129 and 748 cases -- not on a fitted trend.
+    > With nine endpoints this is suggestive, not significant (Pearson −0.47).
+    > The claim rests on those two well-powered examples, not on a fitted trend.
 
-    **The takeaway:** *"sensitive to structure"* and *"hard to predict"* are
-    different properties of a property. Everything in Part 5 follows from this.
+    **Takeaway:** *sensitive to structure* and *hard to predict* are different
+    things. Part 5 is what follows from that.
     """
             ),
         ]
@@ -566,6 +545,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(EPS, mo):
     blend_ep = mo.ui.dropdown(options=EPS, value="HLM", label="Endpoint")
+    blend_ep
     return (blend_ep,)
 
 
@@ -589,7 +569,6 @@ def _(alt, blend_curve, blend_ep, mo, pd):
     )
     mo.vstack(
         [
-            blend_ep,
             (_line + _pred).properties(height=260, width="container"),
             mo.md(
                 f"""
@@ -633,25 +612,20 @@ def _(HONEST_BLEND, mo, pd):
             mo.ui.table(pd.DataFrame(HONEST_BLEND), selection=None, pagination=False),
             mo.md(
                 r"""
-    On the endpoints with plenty of validation data, the formula delivers: **+4.2%**
-    on permeability, **+2.7%** on human clearance.
+    Where validation data is plentiful the formula delivers: **+4.2%** on
+    permeability, **+2.7%** on human clearance.
 
-    On brain and muscle binding it **loses**. Not "helps less" -- actively makes the
-    model worse. With 45 to 81 validation molecules you cannot estimate a correlation
-    well enough to choose a weight, so you choose a bad one.
+    On brain and muscle binding it **loses** -- not "helps less", actively worse.
+    With 45 to 81 validation molecules you cannot estimate a correlation, so you
+    pick a bad weight. Part 1 already showed why those two are starved: they are the
+    expensive assays.
 
-    Look back at Part 1 and you can see why those two are short of data: they are the
-    expensive assays, the ones that only ran on molecules that had already passed
-    everything else.
+    > The rule tells you when a second model pays. Using it needs two numbers
+    > estimated from held-out data -- and the endpoints that most need help are the
+    > ones without enough of it.
 
-    > **The result:** the theory tells you exactly when a second model pays. Using it
-    > requires estimating two numbers from held-out data. On the endpoints that most
-    > need help, there is not enough held-out data to estimate them -- so the
-    > technique fails precisely where you wanted it.
-
-    That is this notebook's answer to *"is it the model's fault or the data's?"* It
-    is the data's, one level up from where people usually look: not too little data
-    to *fit* a model, too little to *decide how* to fit it.
+    So: *model's fault or the data's?* The data's, one level up from where people
+    look. Not too little data to **fit** a model -- too little to decide **how**.
     """
             ),
         ]
@@ -778,6 +752,7 @@ def _(mo):
     ceiling = mo.ui.slider(
         50, 350, value=350, step=25, label="Assay ceiling (uM)", show_value=True
     )
+    ceiling
     return (ceiling,)
 
 
@@ -798,7 +773,6 @@ def _(alt, ceiling, ceiling_effect, mo, pd):
     )
     mo.vstack(
         [
-            ceiling,
             _scatter,
             mo.md(
                 f"""
@@ -808,19 +782,16 @@ def _(alt, ceiling, ceiling_effect, mo, pd):
     | ranking ability (Spearman) | **{_e["rho"]:.3f}** {"-- worse" if _e["rho"] < _e["rho_full"] else ""} |
     | molecules stuck at the ceiling | {_e["at_ceiling"]:.0%} |
 
-    Lower the ceiling and the **error improves while the ranking collapses**. The
-    model looks more accurate and becomes less useful, because a chemist does not
-    want a number -- they want to know which molecule to make next.
+    Lower the ceiling and **error improves while ranking collapses**. The model looks
+    more accurate and gets less useful -- a chemist does not want a number, they want
+    to know which molecule to make next.
 
-    In the real data, **51%** of molecules sit at or above 200 uM, and by the top
-    band Spearman falls to **0.10** while MAE *improves* to 0.235. A model scoring
-    well on this endpoint may have learned nothing but where the lid is.
+    In the real data **51%** of molecules sit at or above 200 uM. In the top band
+    Spearman falls to **0.10** while MAE *improves* to 0.235.
 
-    There is a second, quieter version of the same problem. The published
-    "ML-ready" file drops every out-of-range measurement -- including **265
-    compounds** recorded as `< 4.5` on human clearance. Those are the *most
-    metabolically stable molecules in the set*, the ones a chemist most wants. The
-    clean file is missing its best examples, and nothing in it says so.
+    Quieter version of the same problem: the published "ML-ready" file silently drops
+    out-of-range values, including **265 compounds** logged as `< 4.5` on human
+    clearance -- the most metabolically stable molecules in the set.
     """
             ),
         ]
@@ -855,21 +826,18 @@ def _(mo):
         r"""
     ### 5d. And the model cannot tell you which of these you are in
 
-    The obvious move is to ask the model where it is unsure, or which atoms it is
-    using. We tried both.
+    The obvious move is to ask the model where it is unsure, or which atoms it uses.
+    Both fail:
 
-    - **Atom attributions** (Part 3) do not line up with either volatility or
-      surprise. Concentration of attribution is highest for solubility, which is
-      neither the jumpiest nor the most surprising endpoint.
-    - **Ensemble disagreement** tracks error on only **5 of 9** endpoints, and
-      barely at all on LogD (ρ = 0.06) and permeability (ρ = 0.03).
+    - **Atom attributions** (Part 3) match neither volatility nor surprise.
+    - **Ensemble disagreement** tracks error on only **5 of 9** endpoints, and barely
+      at all on LogD (ρ = 0.06) or permeability (ρ = 0.03).
 
-    So the pale tip on the pegs at the top of this notebook is real information for
-    solubility and efflux, and close to decoration for LogD.
+    So the pale tip on those pegs is real information for solubility and efflux, and
+    nearly decoration for LogD.
 
-    **Which is the whole thesis.** Nine properties, one model, nine different
-    problems -- and the model cannot tell you which one it is facing. Only the
-    measured data can, and only if you go looking.
+    **That is the thesis.** Nine properties, nine different problems -- and the model
+    cannot tell you which one it is in. Only the data can.
     """
     )
     return
@@ -913,7 +881,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(Surrogate, SMILES_OF, bundle, mo):
     with mo.status.spinner("Fitting the stand-in model (about 20 seconds)..."):
         surrogate = Surrogate(bundle["endpoints"]).fit(
@@ -922,7 +890,7 @@ def _(Surrogate, SMILES_OF, bundle, mo):
     return (surrogate,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(mo):
     get_history, set_history = mo.state([])
     return get_history, set_history
@@ -1147,6 +1115,7 @@ def _(mo):
         0.0, 20.0, value=2.0, step=0.5,
         label="Inhibitor strength (concentration / Ki)", show_value=True,
     )
+    mo.hstack([fm_slider, inhib_slider], widths="equal", gap=2)
     return fm_slider, inhib_slider
 
 
@@ -1154,26 +1123,19 @@ def _(mo):
 def _(auc_ratio, fm_slider, inhib_slider, mo, severity):
     _r = auc_ratio(fm_slider.value, inhib_slider.value, 1.0)
     _bar = int(min(_r.auc_ratio, 10) * 6)
-    mo.vstack(
-        [
-            mo.hstack([fm_slider, inhib_slider], widths="equal", gap=2),
-            mo.md(
-                f"""
-    ### Exposure would rise **{_r.auc_ratio:.1f}x** — a *{severity(_r.auc_ratio)}* interaction
+    mo.md(
+        f"""
+    ### Exposure would rise **{_r.auc_ratio:.1f}x** -- a *{severity(_r.auc_ratio)}* interaction
 
     `{"#" * _bar}`
 
-    A drug cleared by a single enzyme (share near 1.0) is at the mercy of anything
-    that blocks it. A drug with a second route out (share near 0.5) is capped at
-    **{1 / max(1 - fm_slider.value, 0.01):.1f}x** no matter how strong the inhibitor
-    gets. That is why "how is this cleared?" is asked as early as "how fast?".
+    A drug cleared by one enzyme (share near 1.0) is at the mercy of anything that
+    blocks it. A drug with a second route out is capped at
+    **{1 / max(1 - fm_slider.value, 0.01):.1f}x** however strong the inhibitor gets.
 
-    **To make this real** you would need measured enzyme-inhibition data. It exists:
-    OpenADMET's CYP Inhibition Challenge covers exactly this, for the four enzymes
-    that handle most drugs. That is the natural next notebook.
+    To make this real you would need measured enzyme-inhibition data --
+    OpenADMET's CYP Inhibition Challenge is exactly that.
     """
-            ),
-        ]
     )
     return
 
@@ -1195,17 +1157,17 @@ def _(mo):
     | **Volatility ≠ surprise** | LogD moves on 33% of one-atom edits and surprises nobody; efflux moves on 5% and blindsides the model |
     | **The label may not mean what it says** | Censored solubility, 265 deleted stable compounds, 129 stereo pairs the model cannot see |
 
-    Four things we expected to find are not in this notebook, because the data said
-    otherwise, and one thing we nearly reported was a NaN artefact wearing a lab coat.
+    Four things we expected to find are not here, because the data said otherwise.
+    One thing we nearly reported was a NaN artefact wearing a lab coat.
 
-    **The thesis, once more:** nine properties, one model, nine different problems —
-    and the model cannot tell you which one it is facing. Only the data can.
+    **Nine properties, one model, nine different problems — and the model cannot
+    tell you which one it is in. Only the data can.**
 
-    ### If you want to take this further
+    ### Take it further
 
-    - Swap the presets in Part 1 for your own project's requirements.
-    - Run the Part 4 rule on your own two models before building the second one.
-    - Check your own labels for a ceiling before trusting an R².
+    - Swap Part 1's presets for your own project's requirements.
+    - Run Part 4's rule before building a second model.
+    - Check your labels for a ceiling before trusting an R².
     """
     )
     return
@@ -1266,16 +1228,20 @@ def _(mo):
     mo.md(
         r"""
     ---
-    ### Appendix -- the code behind this notebook
+    ### Appendix
 
-    The library below is inlined so this file runs anywhere with no repo beside it.
-    It is developed and unit-tested separately; see the repository.
+    Everything below this line is machinery: the data loader and the drawing,
+    chemistry and model code. It is inlined so this notebook runs anywhere with
+    nothing beside it, and it is unit-tested in the
+    [repository](https://github.com/Suyashkb/Marimo-Competition) rather than here.
+
+    **Nothing below is part of the argument.** You have reached the end.
     """
     )
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     import base64
     import io
@@ -2265,7 +2231,7 @@ def _():
 
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(base64, io, json, np, zlib):
     def _decode(blob: str) -> dict:
         """Unpack what the trained ensemble predicted, inlined at build time."""
@@ -6212,7 +6178,7 @@ def _(base64, io, json, np, zlib):
     return (bundle,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(bundle, np, pd):
     # The molecules themselves come from the public CC-BY-4.0 release, so only the
     # model's own output has to travel inside this notebook.
@@ -6245,7 +6211,7 @@ def _(bundle, np, pd):
     return SMILES_OF, Y, data
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(SMILES_OF, Y, bundle, data, np):
     EPS = bundle["endpoints"]
     IDX = {n: i for i, n in enumerate(bundle["names"])}
@@ -6273,7 +6239,7 @@ def _(SMILES_OF, Y, bundle, data, np):
     return EPS, IDX, TEST, board_for, pegs_for
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, IDX, SMILES_OF, bundle, np):
     # A few molecules worth looking at, chosen because each makes a different point.
     EXAMPLES = {
@@ -6302,7 +6268,7 @@ def _(EPS, IDX, SMILES_OF, bundle, np):
     return (EXAMPLES,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, PRESETS, bundle, np):
     def survivors():
         """How many molecules satisfy every requirement of each preset."""
@@ -6330,7 +6296,7 @@ def _(EPS, PRESETS, bundle, np):
     return (survivors,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     # Results from the offline training runs, which cannot be recomputed here:
     # every number is a test-split score, averaged over 3 seeds. See the repo's
@@ -6366,7 +6332,7 @@ def _():
     return ABLATION, REFUTED
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     def n_atoms(smiles: str) -> int:
         """Heavy-atom count. Counting letters in a SMILES string is not this."""
@@ -6378,7 +6344,7 @@ def _():
     return (n_atoms,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, IDX, SMILES_OF, TEST, Y, bundle, find_pairs, np):
     def matched_pairs():
         """Molecule pairs differing by one small substituent.
@@ -6407,7 +6373,7 @@ def _(EPS, IDX, SMILES_OF, TEST, Y, bundle, find_pairs, np):
     return (PAIRS,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, IDX, PAIRS, TEST, Y, bundle, np):
     def surprise_table():
         """Volatility and surprise per endpoint, from the matched pairs.
@@ -6449,7 +6415,7 @@ def _(EPS, IDX, PAIRS, TEST, Y, bundle, np):
     return (surprise_table,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, TEST, Y, bundle, np):
     def blend_curve(endpoint: str) -> dict:
         """Every blend weight's test error, next to what the formula predicts."""
@@ -6484,7 +6450,7 @@ def _(EPS, TEST, Y, bundle, np):
     return (blend_curve,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     # Weights chosen on validation molecules only, then applied to the later test
     # molecules -- the honest version. Computed offline; see train/evidence.py.
@@ -6502,7 +6468,7 @@ def _():
     return (HONEST_BLEND,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, IDX, PAIRS, SMILES_OF, TEST, Y, bundle, np):
     def build_quiz(endpoint: str = "Efflux", n: int = 4) -> list[dict]:
         """Matched pairs for the guessing game: half real cliffs, half flat.
@@ -6546,7 +6512,7 @@ def _(EPS, IDX, PAIRS, SMILES_OF, TEST, Y, bundle, np):
     return (quiz_pairs,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, TEST, Y, bundle, np):
     def ceiling_effect(ceiling_um: float) -> dict:
         """Clip measured solubility at a ceiling and re-score, as an assay would."""
@@ -6579,7 +6545,7 @@ def _(EPS, TEST, Y, bundle, np):
     return (ceiling_effect,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, IDX, SMILES_OF, Y, bundle, np, picture):
     def stereo_example() -> dict:
         """Find two molecules with the same 2D skeleton but different measurements."""
@@ -6642,7 +6608,7 @@ def _(EPS, IDX, SMILES_OF, Y, bundle, np, picture):
     return (stereo_example,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, IDX, PRESETS, SMILES_OF, bundle, fit_report, np, to_real):
     def _pick_puzzle() -> str:
         """A real molecule that fails the brain socket but is small enough to edit."""
@@ -6669,7 +6635,7 @@ def _(EPS, IDX, PRESETS, SMILES_OF, bundle, fit_report, np, to_real):
     return (PUZZLE_START,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, IDX, PAIRS, Y, alt, edit_pick, np, pd):
     def reality_check():
         """What the chosen edit did to real measured pairs, per endpoint."""
@@ -6719,7 +6685,7 @@ def _(EPS, IDX, PAIRS, Y, alt, edit_pick, np, pd):
     return (reality_check,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, Y, data, np):
     def drift_frame(n_batches: int = 12):
         """Median of three endpoints over time, indexed to the first batch.
@@ -6748,7 +6714,7 @@ def _(EPS, Y, data, np):
     return (drift_frame,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(EPS, alt, data, pd):
     def coverage_chart():
         rows = []
